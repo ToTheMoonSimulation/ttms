@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js serve",
-    "SyncAndPush": "sh SyncAndPush.sh",
-    "deploy": "sh deploy.sh",
+    "SyncAndPush": "sh ../SyncAndPush.sh",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
