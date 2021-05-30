@@ -1,0 +1,2 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d0cc1dc"],{"4d0f":function(n,c,e){"use strict";e.r(c);var t=e("7a23"),u=Object(t["m"])("h1",null,"접수된 문의들",-1);function d(n,c,e,d,r,i){return Object(t["D"])(),Object(t["i"])("div",null,[u])}var r={};r.render=d;c["default"]=r}}]);
+//# sourceMappingURL=chunk-2d0cc1dc.cbb38dc8.js.map
