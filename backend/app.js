@@ -18,10 +18,10 @@ dbUtil.mongooseConenct(() => {
   app.set('view engine', 'ejs');
 
   app.use(logger('dev'));
-  app.use(express.json()); //raw json
+  app.use(express.json());
   app.use(express.urlencoded({
     extended: false
-  })); //x-www-form-urlencoded
+  })); 
   app.use(cookieParser());
   app.use(express.static('public'));
   //setting multer
