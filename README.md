@@ -1,3 +1,3 @@
 # ttms
 Simulated investment application for Crypto Currency. <br>
-https://tothemoonsimulation.github.io/ttms/
+https://ttms-dot-onyx-hangout-315003.du.r.appspot.com/
