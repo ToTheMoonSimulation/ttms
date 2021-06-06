@@ -15,14 +15,26 @@ echo 현재 작업 브랜치 $currentBranch
 echo 무엇을 작업했나요?
 read commitMessage
 
-# main 브랜치 동기화
+#main 브랜치 동기화
+
+#임시 저장함 초기화
 git stash clear
-git stash
+
+#임시 저장
+git stash -u
+
+#main 브랜치 다운로드
 git fetch --all
+
+#main 브랜치의 가장 최신 버전으로 초기화
 git reset --hard origin/main
 
-#
+#작업 가져오기
 git stash pop
+
+#작업 저장
 git add -A
 git commit -m "$commitMessage"
+
+#깃허브 업로드
 git push -f origin $currentBranch
