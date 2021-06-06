@@ -3,39 +3,61 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const dbUtil = require('./db/dbUtil');
+var port = process.env.PORT || 3000;
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+dbUtil.mongooseConenct(() => {
+  var indexRouter = require('./routes/index');
+  var usersRouter = require('./routes/users');
+  var loginRouter = require('./routes/login');
 
-var app = express();
+  var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+  // view engine setup
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'ejs');
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  app.use(logger('dev'));
+  app.use(express.json()); //raw json
+  app.use(express.urlencoded({
+    extended: false
+  })); //x-www-form-urlencoded
+  app.use(cookieParser());
+  app.use(express.static('public'));
+  //setting multer
+  // var multer = require('multer');
+  // const storage = multer.diskStorage({
+  //   destination: function (req, file, cb) {
+  //     cb(null, "./GOT");
+  //   },
+  //   filename: function (req, file, cb) {
+  //     cb(null, file.fieldname + "-" + Date.now());
+  //   },
+  // });
+  // app.use(multer({storage}).single('asd'));
+  // app.use(multer({storage}).array('sxa'));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+  app.use('/', indexRouter);
+  app.use('/users', usersRouter);
+  app.use('/login', loginRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+  // catch 404 and forward to error handler
+  app.use(function (req, res, next) {
+    next(createError(404));
+  });
+
+  // error handler
+  app.use(function (err, req, res, next) {
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
+  });
+  
+  app.listen(port, () => {
+    console.log(`app listening at http://localhost:${port}`)
+  })
 });
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-module.exports = app;
