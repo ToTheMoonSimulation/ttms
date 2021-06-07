@@ -27,6 +27,7 @@ dbUtil.mongooseConenct(() => {
     extended: false
   })); 
   app.use(cookieParser());
+  app.use(express.static( path.resolve(__dirname,'public')));
   //setting multer
   // var multer = require('multer');
   // const storage = multer.diskStorage({
@@ -44,7 +45,6 @@ dbUtil.mongooseConenct(() => {
     res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
   });
   app.use('/api/users', usersRouter);
-  app.use(express.static( path.resolve(__dirname,'public')));
   
   
   // catch 404 and forward to error handler
