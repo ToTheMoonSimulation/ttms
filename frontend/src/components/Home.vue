@@ -302,7 +302,7 @@ export default {
     },
     submitBtn: function() {
       axios
-        .post("/api/users", {
+        .post("api/users", {
             id: this.id,
             password: this.password,
         })
@@ -324,7 +324,7 @@ export default {
     },
     modifyAccountBtn: function() {
       axios
-        .put("/api/users", {
+        .put("api/users", {
             id: this.id,
             password: this.password,
           
@@ -344,7 +344,7 @@ export default {
         password: this.password,
       });
       axios
-        .post("/api/users/login", {
+        .post("api/users/login", {
             id: this.id,
             password: this.password,
          
@@ -363,7 +363,7 @@ export default {
     },
     logoutBtn: function() {
       axios
-        .post("/api/users/logout", {
+        .post("api/users/logout", {
             id: this.id,
             password: this.password
         })
