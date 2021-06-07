@@ -18,7 +18,7 @@ const mongooseConenct = async (cb) => {
     const payload = version.payload.data.toString();
 
     mongoose.set('useCreateIndex', true);
-    mongoose.connect("mongodb+srv://admin:E8Dh22i-fSbjL6x@cluster0.ylv2g.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", {
+    mongoose.connect(payload, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })
