@@ -12,11 +12,11 @@
 
       <v-spacer></v-spacer>
 
-      <v-dialog>
-        <template v-slot:activator="{ on: loginDialog, attrs }">
+      <v-dialog v-model="loginDialog" v-if="loginSuccess === false">
+        <template v-slot:activator="{ on: dialog, attrs }">
           <v-tooltip bottom>
             <template v-slot:activator="{ on: tooltip }">
-              <v-btn icon v-bind="attrs" v-on="{ ...tooltip, ...loginDialog }">
+              <v-btn icon v-bind="attrs" v-on="{ ...tooltip, ...dialog }">
                 <v-icon color="green darken-2" dark>
                   mdi-login
                 </v-icon>
@@ -33,13 +33,20 @@
             <v-container>
               <v-row>
                 <v-col cols="12">
-                  <v-text-field label="아이디*" required></v-text-field>
+                  <v-text-field
+                    label="아이디*"
+                    required
+                    :rules="idRules"
+                    v-model="id"
+                  ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="비밀번호*"
                     type="password"
                     required
+                    :rules="passwordRules"
+                    v-model="password"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -48,25 +55,21 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="dialog = false">
+            <v-btn color="blue darken-1" text @click="loginDialog = false">
               취소
             </v-btn>
-            <v-btn color="blue darken-1" text @click="dialog = false">
+            <v-btn color="blue darken-1" text @click="loginBtn">
               로그인
             </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
 
-      <v-dialog>
-        <template v-slot:activator="{ on: registerDialog, attrs }">
+      <v-dialog v-model="registerDialog" v-if="loginSuccess === false">
+        <template v-slot:activator="{ on: dialog, attrs }">
           <v-tooltip bottom>
             <template v-slot:activator="{ on: tooltip }">
-              <v-btn
-                icon
-                v-bind="attrs"
-                v-on="{ ...tooltip, ...registerDialog }"
-              >
+              <v-btn icon v-bind="attrs" v-on="{ ...tooltip, ...dialog }">
                 <v-icon color="blue darken-2">
                   mdi-account-plus
                 </v-icon>
@@ -83,13 +86,20 @@
             <v-container>
               <v-row>
                 <v-col cols="12">
-                  <v-text-field label="아이디*" required></v-text-field>
+                  <v-text-field
+                    label="아이디*"
+                    v-model="id"
+                    required
+                    :rules="idRules"
+                  ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="비밀번호*"
                     type="password"
                     required
+                    :rules="passwordRules"
+                    v-model="password"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -97,6 +107,10 @@
                     label="비밀번호 재입력*"
                     type="password"
                     required
+                    :rules="[
+                      password === confirm_password || 'Password must match',
+                    ]"
+                    v-model="confirm_password"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -105,15 +119,104 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="dialog = false">
+            <v-btn color="blue darken-1" text @click="registerDialog = false">
               취소
             </v-btn>
-            <v-btn color="blue darken-1" text @click="dialog = false">
+            <v-btn color="blue darken-1" text @click="submitBtn">
               회원가입
             </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <v-tooltip bottom v-if="loginSuccess === true">
+        <template v-slot:activator="{ on: tooltip }">
+          <v-btn
+            icon
+            v-on="{ ...tooltip }"
+            @click="$router.push({ name: 'dashboard' }).catch(() => {})"
+          >
+            <v-icon color="blue darken-2" dark>
+              mdi-view-dashboard
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>대시보드</span>
+      </v-tooltip>
+
+      <v-dialog v-model="modifyDialog" v-if="loginSuccess === true">
+        <template v-slot:activator="{ on: dialog, attrs }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn icon v-bind="attrs" v-on="{ ...tooltip, ...dialog }">
+                <v-icon color="green darken-2" dark>
+                  mdi-card-account-details
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>계정 정보</span>
+          </v-tooltip>
+        </template>
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">계정 정보</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="id"
+                    label="아이디*"
+                    disabled
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="비밀번호*"
+                    type="password"
+                    required
+                    :rules="passwordRules"
+                    v-model="password"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="비밀번호 재입력*"
+                    type="password"
+                    required
+                    :rules="[
+                      password === confirm_password || 'Password must match',
+                    ]"
+                    v-model="confirm_password"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+            <small>*표시는 반드시 채워야 합니다.</small>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="modifyDialog = false">
+              취소
+            </v-btn>
+            <v-btn color="blue darken-1" text @click="modifyAccountBtn">
+              수정
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-tooltip bottom v-if="loginSuccess === true">
+        <template v-slot:activator="{ on: tooltip }">
+          <v-btn icon v-on="{ ...tooltip }" @click="logoutBtn">
+            <v-icon color="red darken-2" dark>
+              mdi-logout
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>로그아웃</span>
+      </v-tooltip>
     </v-app-bar>
 
     <!-- Sizes your content based upon application components -->
@@ -134,7 +237,12 @@
                 </p>
               </v-timeline-item>
               <v-timeline-item>
-                <v-btn color="primary" x-large @click="$router.push({ name: 'play' })">지금 시작해보세요!</v-btn>
+                <v-btn
+                  color="primary"
+                  x-large
+                  @click="$router.push({ name: 'play' })"
+                  >지금 시작해보세요!</v-btn
+                >
               </v-timeline-item>
             </v-timeline>
           </v-card-text>
@@ -177,7 +285,97 @@ export default {
   data: () => ({
     loginDialog: false,
     registerDialog: false,
+    id: "",
+    password: "",
+    confirm_password: "",
+    idRules: [(v) => !!v || "아이디를 입력해주십시오"],
+    passwordRules: [(v) => !!v || "패스워드를 입력해주십시오"],
+    loginSuccess: false,
+    accountDialog: false,
+    modifyDialog:false
   }),
+  methods: {
+    initForm: function() {
+      this.id = "";
+      this.password = "";
+      this.confirm_password = "";
+    },
+    submitBtn: function() {
+      axios
+        .post("/api", {
+          id: this.id,
+          password: this.password,
+        })
+        .then((e) => {
+          if (e.data.success == true) {
+            console.log("회원가입 성공!");
+            this.registerDialog = false;
+            this.loginSuccess = true;
+          } else {
+            if (e.data.err.code == 11000) {
+              console.log("아이디 중복 에러!");
+            } else {
+              console.log(e.data.err || "에러!");
+              this.loginSuccess = false;
+            }
+          }
+        });
+    },
+    modifyAccountBtn: function() {
+      axios
+        .put("/api", {
+          id: this.id,
+          password: this.password,
+        })
+        .then((e) => {
+          if (e.data.success == true) {
+            console.log("수정 성공!");
+            this.modifyDialog = false;
+          } else {
+            console.log(e.data.err || "에러!");
+          }
+        });
+    },
+    loginBtn: function() {
+      console.log({
+        id: this.id,
+        password: this.password,
+      });
+      axios
+        .post("/api/login", {
+          id: this.id,
+          password: this.password,
+        })
+        .then((e) => {
+          console.log(e);
+          if (e.data.success == true) {
+            console.log("로그인 성공!");
+            this.loginDialog = false;
+            this.loginSuccess = true;
+          } else {
+            console.log(e.data.err || "에러!");
+            this.loginSuccess = false;
+          }
+        });
+    },
+    logoutBtn: function() {
+      axios
+        .get("/api/logout", {
+          id: this.id,
+          password: this.password,
+        })
+        .then((e) => {
+          if (e.data.success == true) {
+            console.log("로그아웃 성공!");
+            this.loginDialog = false;
+            this.loginSuccess = false;
+          } else {
+            console.log(e.data.err || "에러!");
+          }
+          this.loginSuccess = false;
+        });
+    },
+  },
   mounted() {
     axios
       .get("https://api.upbit.com/v1/market/all?isDetails=false")
@@ -262,7 +460,7 @@ export default {
                 arrInfos = arrInfos.reverse();
                 lineSeries.setData(arrInfos);
               });
-              axios
+            axios
               .get(
                 "https://api.upbit.com/v1/candles/days?market=KRW-ETH&count=200"
               )
@@ -302,10 +500,6 @@ export default {
           });
       });
   },
-  unmounted() {
-    console.log("haa");
-  },
-  methods: {},
 };
 </script>
 

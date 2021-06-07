@@ -3,14 +3,18 @@ var path = require("path");
 module.exports = {
     outputDir: path.resolve("../backend/public"),
 
-    // devServer: {
-    //     proxy: {
-    //         "/": {
-    //             target: "http://localhost:3000/",
-    //             ws: true
-    //         }
-    //     }
-    // },
+    devServer: {
+        proxy: {
+          "/api": {
+            target: "http://localhost:3000/",
+            pathRewrite: {"^/api": "/"}
+        },
+            "/api/*": {
+                target: "http://localhost:3000/",
+                pathRewrite: {"^/api": "/"}
+            }
+        }
+    },
 
     transpileDependencies: [
       'vuetify'

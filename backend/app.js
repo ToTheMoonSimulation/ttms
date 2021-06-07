@@ -3,13 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const session = require('express-session');
 const dbUtil = require('./db/dbUtil');
 var port = process.env.PORT || 3000;
 
 dbUtil.mongooseConenct(() => {
   var indexRouter = require('./routes/index');
-  var usersRouter = require('./routes/users');
-  var loginRouter = require('./routes/login');
 
   var app = express();
 
@@ -17,6 +16,11 @@ dbUtil.mongooseConenct(() => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
+  app.use(session({
+    secret: '@#@$MYSIGN#@$#$',
+    resave: false,
+    saveUninitialized: true
+   }));
   app.use(logger('dev'));
   app.use(express.json());
   app.use(express.urlencoded({
@@ -38,8 +42,6 @@ dbUtil.mongooseConenct(() => {
   // app.use(multer({storage}).array('sxa'));
 
   app.use('/', indexRouter);
-  app.use('/users', usersRouter);
-  app.use('/login', loginRouter);
 
   // catch 404 and forward to error handler
   app.use(function (req, res, next) {

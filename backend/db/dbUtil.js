@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const name = 'projects/1035293153873/secrets/MONGODB_ATLAS_URI/versions/1'
+const name = 'projects/1035293153873/secrets/MONGODB_ATLAS_URI/versions/latest'
 let _db;
 
 const mongooseConenct = async (cb) => {
