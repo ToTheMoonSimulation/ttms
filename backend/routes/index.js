@@ -33,12 +33,10 @@ router.route('/')
         err: null
       });
     } catch (err) {
-      if (err)
         res.json({
           success: false,
           err
         });
-      console.log(err);
     }
   })
   .put(async (req, res) => {

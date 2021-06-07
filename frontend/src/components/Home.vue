@@ -292,7 +292,7 @@ export default {
     passwordRules: [(v) => !!v || "패스워드를 입력해주십시오"],
     loginSuccess: false,
     accountDialog: false,
-    modifyDialog:false
+    modifyDialog: false,
   }),
   methods: {
     initForm: function() {
@@ -303,8 +303,8 @@ export default {
     submitBtn: function() {
       axios
         .post("/", {
-          id: this.id,
-          password: this.password,
+            id: this.id,
+            password: this.password,
         })
         .then((e) => {
           if (e.data.success == true) {
@@ -315,8 +315,8 @@ export default {
             // if (e.data.err.code == 11000) {
             //   console.log("아이디 중복 에러!");
             // } else {
-              console.log(e.data.err || "에러!");
-              this.loginSuccess = false;
+            console.log(e.data.err || "에러!");
+            this.loginSuccess = false;
             // }
           }
         });
@@ -324,8 +324,9 @@ export default {
     modifyAccountBtn: function() {
       axios
         .put("/", {
-          id: this.id,
-          password: this.password,
+            id: this.id,
+            password: this.password,
+          
         })
         .then((e) => {
           if (e.data.success == true) {
@@ -343,8 +344,9 @@ export default {
       });
       axios
         .post("/login", {
-          id: this.id,
-          password: this.password,
+            id: this.id,
+            password: this.password,
+         
         })
         .then((e) => {
           console.log(e);
@@ -361,8 +363,9 @@ export default {
     logoutBtn: function() {
       axios
         .get("/logout", {
-          id: this.id,
-          password: this.password,
+            id: this.id,
+            password: this.password,
+          
         })
         .then((e) => {
           if (e.data.success == true) {
