@@ -2,14 +2,24 @@ runtime: nodejs14
 service : ttms
 handlers:
 
-# Serve all static files with url ending with a file extension
-- url: /(.*\..+)$
-  secure: always
-  static_files: public/\1
-  upload: public/.*\..+$
+# # Serve all static files with url ending with a file extension
+# - url: /(.*\..+)$
+#   secure: always
+#   static_files: public/\1
+#   upload: public/.*\..+$
 
-# Catch all handler to index.html
-- url: /.*
+# # Catch all handler to index.html
+# - url: /.*
+#   secure: always
+#   static_files: public/index.html
+#   upload: public/index.html
+
+- url: /
   secure: always
   static_files: public/index.html
   upload: public/index.html
+
+- url: /(.*)
+  secure: always
+  static_files: public/\1
+  upload: public/(.*)
