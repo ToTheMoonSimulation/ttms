@@ -18,8 +18,9 @@ function getCurrentDate() {
 router.route('/')
   .get((req, res) => {
     res.sendFile(path.join(__dirname, '../public', 'index.html'));
-  })
-  .post(async (req, res) => {
+  });
+  
+router.route('/api').post(async (req, res) => {
     try {
       console.log(req.body.id, req.body.password);
       var user = new userModel();
