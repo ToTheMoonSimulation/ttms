@@ -302,7 +302,7 @@ export default {
     },
     submitBtn: function() {
       axios
-        .post("https://ttms-dot-onyx-hangout-315003.du.r.appspot.com/api/users", {
+        .post("/api/users", {
             id: this.id,
             password: this.password,
         })
