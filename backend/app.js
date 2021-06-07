@@ -42,7 +42,7 @@ dbUtil.mongooseConenct(() => {
 
   app.use('/', indexRouter);
   
-  app.use(express.static('public'));
+  app.use(express.static( path.resolve(__dirname,'public')));
 
   // catch 404 and forward to error handler
   app.use(function (req, res, next) {
@@ -57,7 +57,7 @@ dbUtil.mongooseConenct(() => {
 
     // render the error page
     res.status(err.status || 500);
-    res.send(err.status || 500);
+    res.end();
   });
   
   app.listen(port, () => {
