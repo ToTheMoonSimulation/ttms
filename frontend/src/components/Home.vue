@@ -312,12 +312,12 @@ export default {
             this.registerDialog = false;
             this.loginSuccess = true;
           } else {
-            if (e.data.err.code == 11000) {
-              console.log("아이디 중복 에러!");
-            } else {
+            // if (e.data.err.code == 11000) {
+            //   console.log("아이디 중복 에러!");
+            // } else {
               console.log(e.data.err || "에러!");
               this.loginSuccess = false;
-            }
+            // }
           }
         });
     },
