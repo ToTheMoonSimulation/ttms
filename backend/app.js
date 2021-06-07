@@ -8,7 +8,6 @@ const dbUtil = require('./db/dbUtil');
 var port = process.env.PORT || 3000;
 
 dbUtil.mongooseConenct(() => {
-  var indexRouter = require('./routes/index');
   var usersRouter = require('./routes/users');
 
   var app = express();
@@ -41,7 +40,9 @@ dbUtil.mongooseConenct(() => {
   // app.use(multer({storage}).single('asd'));
   // app.use(multer({storage}).array('sxa'));
 
-  app.use('/', indexRouter);
+  app.get('/', (req,res)=>{
+    res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
+  });
   app.use('/api/users', usersRouter);
   app.use(express.static( path.resolve(__dirname,'public')));
   
