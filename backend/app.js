@@ -44,7 +44,7 @@ dbUtil.mongooseConenct(() => {
   // app.use(multer({storage}).array('sxa'));
 
   app.get('/', (req,res)=>{
-    console.log("WHAT");
+    console.log('hi');
     res.sendFile(path.resolve(__dirname, './public', 'index.html'));
   });
   app.use('/api/users', usersRouter);

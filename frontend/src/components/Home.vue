@@ -254,21 +254,21 @@
               <p>도지 코인</p>
               <div
                 style="text-align:center;"
-                id="dogeChart"
-                ref="dogeChart"
+                id="dogeChartDiv"
+                ref="dogeChartDiv"
               ></div>
             </v-card>
           </v-col>
           <v-col cols="12" sm="4">
             <v-card class="pa-2" outlined tile>
               <p>비트 코인</p>
-              <div id="btcChart" ref="btcChart"></div>
+              <div id="btcChartDiv" ref="btcChartDiv"></div>
             </v-card>
           </v-col>
           <v-col cols="12" sm="4">
             <v-card class="pa-2" outlined tile>
               <p>이더리움</p>
-              <div id="ethChart" ref="ethChart"></div>
+              <div id="ethChartDiv" ref="ethChartDiv"></div>
             </v-card>
           </v-col>
         </v-row>
@@ -279,7 +279,8 @@
 
 <script>
 import axios from "axios";
-import { createChart } from "lightweight-charts";
+import { createChart, CrosshairMode } from "lightweight-charts";
+import ws from "@/libraries/ws";
 
 export default {
   data: () => ({
@@ -293,6 +294,17 @@ export default {
     loginSuccess: false,
     accountDialog: false,
     modifyDialog: false,
+    observer: null,
+    dogeChart: null,
+    dogeBar: null,
+    dogeBarPriceInfo: {},
+    btcChart: null,
+    btcBar: null,
+    btcBarInfos: [],
+    btcBarPriceInfo: {},
+    ethChart: null,
+    ethBar: null,
+    ethBarPriceInfo: {},
   }),
   methods: {
     initForm: function() {
@@ -303,8 +315,8 @@ export default {
     submitBtn: function() {
       axios
         .post("/api/users", {
-            id: this.id,
-            password: this.password,
+          id: this.id,
+          password: this.password,
         })
         .then((e) => {
           if (e.data.success == true) {
@@ -312,22 +324,17 @@ export default {
             this.registerDialog = false;
             this.loginSuccess = true;
           } else {
-            // if (e.data.err.code == 11000) {
-            //   console.log("아이디 중복 에러!");
-            // } else {
-              console.log(e);
+            console.log(e);
             console.log(e.data.err || "에러!");
             this.loginSuccess = false;
-            // }
           }
         });
     },
     modifyAccountBtn: function() {
       axios
         .put("/api/users", {
-            id: this.id,
-            password: this.password,
-          
+          id: this.id,
+          password: this.password,
         })
         .then((e) => {
           if (e.data.success == true) {
@@ -345,9 +352,8 @@ export default {
       });
       axios
         .post("/api/users/login", {
-            id: this.id,
-            password: this.password,
-         
+          id: this.id,
+          password: this.password,
         })
         .then((e) => {
           console.log(e);
@@ -364,8 +370,8 @@ export default {
     logoutBtn: function() {
       axios
         .post("/api/users/logout", {
-            id: this.id,
-            password: this.password
+          id: this.id,
+          password: this.password,
         })
         .then((e) => {
           if (e.data.success == true) {
@@ -379,126 +385,299 @@ export default {
         });
     },
   },
+  unmounted() {
+    console.log("unmounted");
+  },
   mounted() {
-    axios
-      .get("https://api.upbit.com/v1/market/all?isDetails=false")
-      .then((e) => {
-        var allMarkets = e.data;
-        var krwMarkets = [];
-        allMarkets.some((item) => {
-          if (item.market.startsWith("KRW")) {
-            krwMarkets.push(item);
+    console.log("mounted");
+    ws.onopen = (e) => {
+      console.log("onopen");
+      console.log(e);
+      var msg = [
+        {
+          ticket: "TEST",
+        },
+
+        {
+          type: "ticker",
+          codes: ["KRW-BTC", "KRW-DOGE", "KRW-ETH"],
+          isOnlyRealtime: true,
+        },
+      ];
+      msg = JSON.stringify(msg);
+      ws.send(msg);
+    };
+    ws.onclose = (e) => {
+      console.log("onclose");
+      console.log(e);
+    };
+    ws.onmessage = (e) => {
+      console.log("onmessage");
+      var enc = new TextDecoder("utf-8");
+      var arr = new Uint8Array(e.data);
+      var data = JSON.parse(enc.decode(arr));
+      if (this.btcBar && data.code === "KRW-BTC") {
+        let curDate = parseInt(data.timestamp / 1000) + 32400;
+        let lastDate = this.btcBarInfos[this.btcBarInfos.length - 1].time + 60;
+
+        if (curDate > lastDate) {
+          this.btcBarInfos[this.btcBarInfos.length - 1].time = curDate;
+          this.btcBarInfos[this.btcBarInfos.length - 1].value =
+            data.trade_price;
+
+          this.btcBarPriceInfo.open = data.trade_price;
+
+          this.btcBar.update({
+            time: curDate,
+            open: data.trade_price,
+            high: data.trade_price,
+            low: data.trade_price,
+            close: data.trade_price,
+            value: data.trade_price,
+          });
+        } else {
+          let high = Math.max(this.btcBarPriceInfo.high, data.trade_price),
+            low = Math.min(this.btcBarPriceInfo.low, data.trade_price);
+
+          this.btcBarPriceInfo.high = high;
+          this.btcBarPriceInfo.low = low;
+
+          this.btcBar.update({
+            time: this.btcBarInfos[this.btcBarInfos.length - 1].time,
+            open: this.btcBarPriceInfo.open,
+            high: this.btcBarPriceInfo.high,
+            low: this.btcBarPriceInfo.low,
+            close: data.trade_price,
+            value: data.trade_price,
+          });
+        }
+      } else if (this.dogeBar && data.code === "KRW-DOGE") {
+        let curDate = parseInt(data.timestamp / 1000) + 32400;
+        let lastDate = this.dogeBarInfos[this.dogeBarInfos.length - 1].time + 60;
+
+        if (curDate > lastDate) {
+          this.dogeBarInfos[this.dogeBarInfos.length - 1].time = curDate;
+          this.dogeBarInfos[this.dogeBarInfos.length - 1].value =
+            data.trade_price;
+
+          this.dogeBarPriceInfo.open = data.trade_price;
+
+          this.dogeBar.update({
+            time: curDate,
+            open: data.trade_price,
+            high: data.trade_price,
+            low: data.trade_price,
+            close: data.trade_price,
+            value: data.trade_price,
+          });
+        } else {
+          let high = Math.max(this.dogeBarPriceInfo.high, data.trade_price),
+            low = Math.min(this.dogeBarPriceInfo.low, data.trade_price);
+
+          this.dogeBarPriceInfo.high = high;
+          this.dogeBarPriceInfo.low = low;
+
+          this.dogeBar.update({
+            time: this.dogeBarInfos[this.dogeBarInfos.length - 1].time,
+            open: this.dogeBarPriceInfo.open,
+            high: this.dogeBarPriceInfo.high,
+            low: this.dogeBarPriceInfo.low,
+            close: data.trade_price,
+            value: data.trade_price,
+          });
+        }
+      } else if (this.ethBar && data.code === "KRW-ETH") {
+        let curDate = parseInt(data.timestamp / 1000) + 32400;
+        let lastDate = this.ethBarInfos[this.ethBarInfos.length - 1].time + 60;
+
+        if (curDate > lastDate) {
+          this.ethBarInfos[this.ethBarInfos.length - 1].time = curDate;
+          this.ethBarInfos[this.ethBarInfos.length - 1].value =
+            data.trade_price;
+
+          this.ethBarPriceInfo.open = data.trade_price;
+
+          this.ethBar.update({
+            time: curDate,
+            open: data.trade_price,
+            high: data.trade_price,
+            low: data.trade_price,
+            close: data.trade_price,
+            value: data.trade_price,
+          });
+        } else {
+          let high = Math.max(this.ethBarPriceInfo.high, data.trade_price),
+            low = Math.min(this.ethBarPriceInfo.low, data.trade_price);
+
+          this.ethBarPriceInfo.high = high;
+          this.ethBarPriceInfo.low = low;
+
+          this.ethBar.update({
+            time: this.ethBarInfos[this.ethBarInfos.length - 1].time,
+            open: this.ethBarPriceInfo.open,
+            high: this.ethBarPriceInfo.high,
+            low: this.ethBarPriceInfo.low,
+            close: data.trade_price,
+            value: data.trade_price,
+          });
+        }
+      }
+      console.log(data);
+    };
+    ws.onerror = (e) => {
+      console.log("onerror");
+      console.log(e);
+    };
+
+    this.observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        if (entry.target) {
+          if (entry.target.id.includes("doge") && this.dogeChart) {
+            this.dogeChart.applyOptions({
+              width: entry.contentRect.width,
+              height: entry.contentRect.height,
+            });
+          } else if (entry.target.id.includes("btc") && this.btcChart) {
+            this.btcChart.applyOptions({
+              width: entry.contentRect.width,
+              height: entry.contentRect.height,
+            });
+          } else if (entry.target.id.includes("eth") && this.ethChart) {
+            this.ethChart.applyOptions({
+              width: entry.contentRect.width,
+              height: entry.contentRect.height,
+            });
           }
+        }
+      }
+    });
+    this.observer.observe(this.$refs.dogeChartDiv);
+    this.observer.observe(this.$refs.btcChartDiv);
+    this.observer.observe(this.$refs.ethChartDiv);
+
+    var chartConfig = {
+      width: 500,
+      height: 400,
+      layout: {
+        backgroundColor: "#ffffff",
+        textColor: "rgba(33, 56, 77, 1)",
+      },
+      grid: {
+        vertLines: {
+          color: "rgba(197, 203, 206, 0.7)",
+        },
+        horzLines: {
+          color: "rgba(197, 203, 206, 0.7)",
+        },
+      },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+    };
+    axios
+      .get(
+        "https://api.upbit.com/v1/candles/minutes/1?market=KRW-DOGE&count=200"
+      )
+      .then((e) => {
+        var datas = e.data;
+        var arrInfos = [];
+        this.dogeChart = createChart(this.$refs.dogeChartDiv, chartConfig);
+        this.dogeBar = this.dogeChart.addCandlestickSeries();
+        datas.some((item) => {
+          let a = new Date(item.candle_date_time_kst);
+          a.setHours(a.getHours() + 9);
+          arrInfos.push({
+            time: parseInt(a.getTime() / 1000),
+            open: item.opening_price,
+            high: item.high_price,
+            low: item.low_price,
+            close: item.trade_price,
+            value: item.trade_price,
+          });
         });
+        arrInfos = arrInfos.reverse();
+        this.dogeBar.setData(arrInfos);
+        this.dogeBarInfos = arrInfos;
+        var high = this.dogeBarInfos[this.dogeBarInfos.length - 1].high;
+        var low = this.dogeBarInfos[this.dogeBarInfos.length - 1].low;
+        var open = this.dogeBarInfos[this.dogeBarInfos.length - 1].open;
+        this.dogeBarPriceInfo = {
+          high,
+          low,
+          open,
+        };
         axios
           .get(
-            "https://api.upbit.com/v1/candles/days?market=KRW-DOGE&count=200"
+            "https://api.upbit.com/v1/candles/minutes/1?market=KRW-BTC&count=200"
           )
           .then((e) => {
             var datas = e.data;
             var arrInfos = [];
-            var chart = createChart(this.$refs.dogeChart, {
-              width: 500,
-              height: 400,
-              layout: {
-                backgroundColor: "#ffffff",
-                textColor: "rgba(33, 56, 77, 1)",
-              },
-              grid: {
-                vertLines: {
-                  color: "rgba(197, 203, 206, 0.7)",
-                },
-                horzLines: {
-                  color: "rgba(197, 203, 206, 0.7)",
-                },
-              },
-              timeScale: {
-                timeVisible: true,
-                secondsVisible: true,
-              },
-            });
-            var lineSeries = chart.addLineSeries();
+            this.btcChart = createChart(this.$refs.btcChartDiv, chartConfig);
+            this.btcBar = this.btcChart.addCandlestickSeries();
             datas.some((item) => {
+              let a = new Date(item.candle_date_time_kst);
+              a.setHours(a.getHours() + 9);
               arrInfos.push({
-                time: parseInt(item.timestamp / 1000),
+                time: parseInt(a.getTime() / 1000),
+                open: item.opening_price,
+                high: item.high_price,
+                low: item.low_price,
+                close: item.trade_price,
                 value: item.trade_price,
               });
             });
             arrInfos = arrInfos.reverse();
-            lineSeries.setData(arrInfos);
+            this.btcBar.setData(arrInfos);
+            this.btcBarInfos = arrInfos;
+            var high = this.btcBarInfos[this.btcBarInfos.length - 1].high;
+            var low = this.btcBarInfos[this.btcBarInfos.length - 1].low;
+            var open = this.btcBarInfos[this.btcBarInfos.length - 1].open;
+            this.btcBarPriceInfo = {
+              high,
+              low,
+              open,
+            };
+
             axios
               .get(
-                "https://api.upbit.com/v1/candles/days?market=KRW-BTC&count=200"
+                "https://api.upbit.com/v1/candles/minutes/1?market=KRW-ETH&count=200"
               )
               .then((e) => {
                 var datas = e.data;
                 var arrInfos = [];
-                var chart = createChart(this.$refs.btcChart, {
-                  width: 500,
-                  height: 400,
-                  layout: {
-                    backgroundColor: "#ffffff",
-                    textColor: "rgba(33, 56, 77, 1)",
-                  },
-                  grid: {
-                    vertLines: {
-                      color: "rgba(197, 203, 206, 0.7)",
-                    },
-                    horzLines: {
-                      color: "rgba(197, 203, 206, 0.7)",
-                    },
-                  },
-                  timeScale: {
-                    timeVisible: true,
-                    secondsVisible: true,
-                  },
-                });
-                var lineSeries = chart.addLineSeries();
+                this.ethChart = createChart(
+                  this.$refs.ethChartDiv,
+                  chartConfig
+                );
+                this.ethBar = this.ethChart.addCandlestickSeries();
                 datas.some((item) => {
+                  let a = new Date(item.candle_date_time_kst);
+                  a.setHours(a.getHours() + 9);
                   arrInfos.push({
-                    time: parseInt(item.timestamp / 1000),
+                    time: parseInt(a.getTime() / 1000),
+                    open: item.opening_price,
+                    high: item.high_price,
+                    low: item.low_price,
+                    close: item.trade_price,
                     value: item.trade_price,
                   });
                 });
                 arrInfos = arrInfos.reverse();
-                lineSeries.setData(arrInfos);
-              });
-            axios
-              .get(
-                "https://api.upbit.com/v1/candles/days?market=KRW-ETH&count=200"
-              )
-              .then((e) => {
-                var datas = e.data;
-                var arrInfos = [];
-                var chart = createChart(this.$refs.ethChart, {
-                  width: 500,
-                  height: 400,
-                  layout: {
-                    backgroundColor: "#ffffff",
-                    textColor: "rgba(33, 56, 77, 1)",
-                  },
-                  grid: {
-                    vertLines: {
-                      color: "rgba(197, 203, 206, 0.7)",
-                    },
-                    horzLines: {
-                      color: "rgba(197, 203, 206, 0.7)",
-                    },
-                  },
-                  timeScale: {
-                    timeVisible: true,
-                    secondsVisible: true,
-                  },
-                });
-                var lineSeries = chart.addLineSeries();
-                datas.some((item) => {
-                  arrInfos.push({
-                    time: parseInt(item.timestamp / 1000),
-                    value: item.trade_price,
-                  });
-                });
-                arrInfos = arrInfos.reverse();
-                lineSeries.setData(arrInfos);
+                this.ethBar.setData(arrInfos);
+                this.ethBarInfos = arrInfos;
+                var high = this.ethBarInfos[this.ethBarInfos.length - 1].high;
+                var low = this.ethBarInfos[this.ethBarInfos.length - 1].low;
+                var open = this.ethBarInfos[this.ethBarInfos.length - 1].open;
+                this.ethBarPriceInfo = {
+                  high,
+                  low,
+                  open,
+                };
               });
           });
       });

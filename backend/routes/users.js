@@ -37,6 +37,12 @@ router.route('/')
         }
     })
     .put(async (req, res) => {
+        if(!req.session.id){
+            res.json({
+                success: false,
+                err : "you must login first"
+            });
+        }
         try {
             var user = await userModel.findOne({
                 id: req.body.id
