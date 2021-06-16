@@ -129,6 +129,21 @@
         </v-card>
       </v-dialog>
 
+      <v-tooltip bottom v-if="isAdminLogin === true">
+        <template v-slot:activator="{ on: tooltip }">
+          <v-btn
+            icon
+            v-on="{ ...tooltip }"
+            @click="$router.push({ name: 'admin_memberManagement' }).catch(() => {})"
+          >
+            <v-icon color="blue darken-2" dark>
+              mdi-account-cowboy-hat
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>관리자 페이지</span>
+      </v-tooltip>
+
       <v-tooltip bottom v-if="loginSuccess === true">
         <template v-slot:activator="{ on: tooltip }">
           <v-btn
@@ -286,6 +301,7 @@ export default {
   data: () => ({
     loginDialog: false,
     registerDialog: false,
+    isAdminLogin: false,
     id: "",
     password: "",
     confirm_password: "",
@@ -314,7 +330,7 @@ export default {
     },
     submitBtn: function() {
       axios
-        .post("/api/users", {
+        .post("/api/users/register", {
           id: this.id,
           password: this.password,
         })
@@ -323,6 +339,9 @@ export default {
             console.log("회원가입 성공!");
             this.registerDialog = false;
             this.loginSuccess = true;
+            this.password = "";
+            this.confirm_password = "";
+            this.$store.dispatch("setLogin", true);
           } else {
             console.log(e);
             console.log(e.data.err || "에러!");
@@ -332,7 +351,7 @@ export default {
     },
     modifyAccountBtn: function() {
       axios
-        .put("/api/users", {
+        .put("/api/users/update", {
           id: this.id,
           password: this.password,
         })
@@ -340,16 +359,14 @@ export default {
           if (e.data.success == true) {
             console.log("수정 성공!");
             this.modifyDialog = false;
+            this.password = "";
+            this.confirm_password = "";
           } else {
             console.log(e.data.err || "에러!");
           }
         });
     },
     loginBtn: function() {
-      console.log({
-        id: this.id,
-        password: this.password,
-      });
       axios
         .post("/api/users/login", {
           id: this.id,
@@ -361,6 +378,12 @@ export default {
             console.log("로그인 성공!");
             this.loginDialog = false;
             this.loginSuccess = true;
+            this.password = "";
+            this.confirm_password = "";
+            this.$store.dispatch("setLogin", true);
+            if (e.data.adminLogin) {
+              this.isAdminLogin = true;
+            }
           } else {
             console.log(e.data.err || "에러!");
             this.loginSuccess = false;
@@ -368,21 +391,14 @@ export default {
         });
     },
     logoutBtn: function() {
-      axios
-        .post("/api/users/logout", {
-          id: this.id,
-          password: this.password,
-        })
-        .then((e) => {
-          if (e.data.success == true) {
-            console.log("로그아웃 성공!");
-            this.loginDialog = false;
-            this.loginSuccess = false;
-          } else {
-            console.log(e.data.err || "에러!");
-          }
-          this.loginSuccess = false;
-        });
+      axios.post("/api/users/logout").then(() => {
+        console.log("로그아웃 성공!");
+        this.id = "";
+        this.password = "";
+        this.confirm_password = "";
+        this.loginSuccess = false;
+        this.$store.dispatch("setLogin", false);
+      });
     },
   },
   unmounted() {
@@ -390,6 +406,26 @@ export default {
   },
   mounted() {
     console.log("mounted");
+
+    if (this.$store.getters.isLogin) {
+      this.loginSuccess = true;
+    }
+
+    axios.get("/api/users/session").then((e) => {
+      if (e.data.success == true) {
+        console.log("세션 유지중");
+        this.loginSuccess = true;
+        this.id = e.data.user_id;
+        this.$store.dispatch("setLogin", true);
+        if(e.data.adminLogin){
+          this.isAdminLogin=true;
+        }
+      } else {
+        this.$store.dispatch("setLogin", false);
+        this.loginSuccess = false;
+      }
+    });
+
     ws.onopen = (e) => {
       console.log("onopen");
       console.log(e);
@@ -453,7 +489,8 @@ export default {
         }
       } else if (this.dogeBar && data.code === "KRW-DOGE") {
         let curDate = parseInt(data.timestamp / 1000) + 32400;
-        let lastDate = this.dogeBarInfos[this.dogeBarInfos.length - 1].time + 60;
+        let lastDate =
+          this.dogeBarInfos[this.dogeBarInfos.length - 1].time + 60;
 
         if (curDate > lastDate) {
           this.dogeBarInfos[this.dogeBarInfos.length - 1].time = curDate;
@@ -528,6 +565,22 @@ export default {
       console.log("onerror");
       console.log(e);
     };
+
+    if (ws.readyState == 1) {
+      var msg = [
+        {
+          ticket: "TEST",
+        },
+
+        {
+          type: "ticker",
+          codes: ["KRW-BTC", "KRW-DOGE", "KRW-ETH"],
+          isOnlyRealtime: true,
+        },
+      ];
+      msg = JSON.stringify(msg);
+      ws.send(msg);
+    }
 
     this.observer = new ResizeObserver((entries) => {
       for (let entry of entries) {

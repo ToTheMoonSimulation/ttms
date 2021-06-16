@@ -15,7 +15,34 @@ function getCurrentDate() {
     var milliseconds = date.getMilliseconds();
     return new Date(Date.UTC(year, month, today, hours, minutes, seconds, milliseconds));
 }
-router.route('/')
+
+router.route('/session').get((req, res) => {
+    console.log(req.session.user_id);
+    if (req.session.user_id) {
+        console.log("세션 유지중");
+        if (req.session.user_id === "admin") {
+            res.json({
+                success: true,
+                user_id: req.session.user_id,
+                adminLogin: true,
+                err: null
+            });
+        } else {
+            res.json({
+                success: true,
+                user_id: req.session.user_id,
+                err: null
+            });
+        }
+    } else {
+        res.json({
+            success: false,
+            err: null
+        });
+    }
+});
+
+router.route('/register')
     .post(async (req, res) => {
         try {
             console.log(req.body.id, req.body.password);
@@ -24,7 +51,7 @@ router.route('/')
             user.password = req.body.password;
             await user.save();
             console.log("register success");
-            req.session.id = user.id;
+            req.session.user_id = user.id;
             res.json({
                 success: true,
                 err: null
@@ -35,12 +62,14 @@ router.route('/')
                 err
             });
         }
-    })
+    });
+
+router.route('/update')
     .put(async (req, res) => {
-        if(!req.session.id){
+        if (!req.session.user_id) {
             res.json({
                 success: false,
-                err : "you must login first"
+                err: "you must login first"
             });
         }
         try {
@@ -89,11 +118,19 @@ router.route('/login')
             var match = await bcrypt.compare(req.body.password, docs[0].password);
             console.log(req.body.password, " == ", docs[0].password, ':', match);
             if (match) {
-                req.session.id = req.body.id;
-                res.json({
-                    success: true,
-                    err: null
-                });
+                req.session.user_id = req.body.id;
+                if (req.session.user_id === "admin") {
+                    res.json({
+                        success: true,
+                        adminLogin: true,
+                        err: null
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        err: null
+                    });
+                }
             } else {
                 res.json({
                     success: false,
@@ -112,21 +149,19 @@ router.route('/login')
     });
 router.route('/logout')
     .post((req, res) => {
-        if (req.session.id) {
+        if (req.session.user_id) {
+            delete req.session.user_id;
             req.session.destroy(function (err) {
                 if (err) {
                     console.log(err);
-                    res.json({
-                        success: false,
-                        err
-                    });
+                    res.redirect('/');
                 } else {
-                    res.json({
-                        success: true,
-                        err: null
-                    });
+                    console.log("로그아웃 성공");
+                    req.session = null;
+                    res.redirect('/');
                 }
-            })
+            });
+
         } else {
             res.redirect('/');
         }
