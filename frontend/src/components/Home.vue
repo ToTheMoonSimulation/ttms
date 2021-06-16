@@ -134,7 +134,9 @@
           <v-btn
             icon
             v-on="{ ...tooltip }"
-            @click="$router.push({ name: 'admin_memberManagement' }).catch(() => {})"
+            @click="
+              $router.push({ name: 'admin_memberManagement' }).catch(() => {})
+            "
           >
             <v-icon color="blue darken-2" dark>
               mdi-account-cowboy-hat
@@ -417,8 +419,8 @@ export default {
         this.loginSuccess = true;
         this.id = e.data.user_id;
         this.$store.dispatch("setLogin", true);
-        if(e.data.adminLogin){
-          this.isAdminLogin=true;
+        if (e.data.adminLogin) {
+          this.isAdminLogin = true;
         }
       } else {
         this.$store.dispatch("setLogin", false);
@@ -448,7 +450,6 @@ export default {
       console.log(e);
     };
     ws.onmessage = (e) => {
-      console.log("onmessage");
       var enc = new TextDecoder("utf-8");
       var arr = new Uint8Array(e.data);
       var data = JSON.parse(enc.decode(arr));
@@ -462,6 +463,8 @@ export default {
             data.trade_price;
 
           this.btcBarPriceInfo.open = data.trade_price;
+          this.btcBarPriceInfo.high = data.trade_price;
+          this.btcBarPriceInfo.low = data.trade_price;
 
           this.btcBar.update({
             time: curDate,
@@ -498,6 +501,8 @@ export default {
             data.trade_price;
 
           this.dogeBarPriceInfo.open = data.trade_price;
+          this.dogeBarPriceInfo.high = data.trade_price;
+          this.dogeBarPriceInfo.low = data.trade_price;
 
           this.dogeBar.update({
             time: curDate,
@@ -533,6 +538,8 @@ export default {
             data.trade_price;
 
           this.ethBarPriceInfo.open = data.trade_price;
+          this.ethBarPriceInfo.high = data.trade_price;
+          this.ethBarPriceInfo.low = data.trade_price;
 
           this.ethBar.update({
             time: curDate,
@@ -559,7 +566,6 @@ export default {
           });
         }
       }
-      console.log(data);
     };
     ws.onerror = (e) => {
       console.log("onerror");

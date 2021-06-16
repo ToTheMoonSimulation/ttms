@@ -9,6 +9,7 @@ var port = process.env.PORT || 3000;
 
 dbUtil.mongooseConenct(() => {
   var usersRouter = require('./routes/users');
+  var dashboardRouter = require('./routes/dashboard');
 
   var app = express();
 
@@ -44,10 +45,11 @@ dbUtil.mongooseConenct(() => {
   // app.use(multer({storage}).array('sxa'));
 
   app.get('/', (req,res)=>{
-    console.log('hi');
     res.sendFile(path.resolve(__dirname, './public', 'index.html'));
   });
   app.use('/api/users', usersRouter);
+  app.use('/api/dashboard', dashboardRouter);
+  
   
   
   // catch 404 and forward to error handler
