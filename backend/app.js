@@ -10,6 +10,7 @@ var port = process.env.PORT || 3000;
 dbUtil.mongooseConenct(() => {
   var usersRouter = require('./routes/users');
   var dashboardRouter = require('./routes/dashboard');
+  var playRouter = require('./routes/play');
 
   var app = express();
 
@@ -49,6 +50,7 @@ dbUtil.mongooseConenct(() => {
   });
   app.use('/api/users', usersRouter);
   app.use('/api/dashboard', dashboardRouter);
+  app.use('/api/play', playRouter);
   
   
   

@@ -399,6 +399,7 @@ export default {
         this.password = "";
         this.confirm_password = "";
         this.loginSuccess = false;
+        this.isAdminLogin=false;
         this.$store.dispatch("setLogin", false);
       });
     },

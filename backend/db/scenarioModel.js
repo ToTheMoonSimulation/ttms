@@ -23,7 +23,8 @@ var scenarioSchema = new Schema({
     scenarios: [{
         scenarioName: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         initBalance: {
             type: Number,
@@ -35,6 +36,41 @@ var scenarioSchema = new Schema({
         benefitRatio: {
             type: Number,
         },
+        coinHoldings:[
+            {
+                coinCode :{
+                    type:String
+                },
+                quantity : {
+                    type:Number
+                },
+                priceAvg : {
+                    type:Number
+                },
+                krw:{
+                    type:Number
+                }
+            }
+        ],
+        tradeHistory:[
+            {
+                coinCode :{
+                    type:String
+                },
+                price :{
+                    type:Number
+                },
+                quantity : {
+                    type:Number
+                },
+                tradeType:{
+                    type:String
+                },
+                tradeDate:{
+                    type:Date
+                }
+            }
+        ],
         createdTime: {
             type: Date,
             required: true,

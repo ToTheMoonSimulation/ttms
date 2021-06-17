@@ -22,17 +22,26 @@ router.route('/')
                 success: false,
                 err: "session lost"
             });
+            return;
         }
         try {
             var docs = await scenarioModel.find({
                 id: req.session.user_id
             });
             console.log(docs);
-            res.json({
-                success: true,
-                docs,
-                err: null
-            })
+            if (docs.length > 0) {
+                res.json({
+                    success: true,
+                    docs,
+                    err: null
+                });
+            }else{
+                res.json({
+                    success: false,
+                    docs,
+                    err: "no data"
+                });
+            }
         } catch (e) {
             res.json({
                 success: false,
@@ -46,6 +55,7 @@ router.route('/')
                 success: false,
                 err: "session lost"
             });
+            return;
         }
         try {
             var doc = await scenarioModel.findOne({
@@ -54,6 +64,18 @@ router.route('/')
             console.log(doc);
 
             if (doc) {
+                var failed=false;
+                doc.scenarios.some((item)=>{
+                    if( item.scenarioName == req.body.name){
+                        res.json({
+                            success: false,
+                            err:"duplicate name"
+                        });
+                        failed=true;
+                        return true;
+                    }
+                });
+                if(failed) return;
                 doc.scenarios.push({
                     scenarioName: req.body.name,
                     initBalance: req.body.initBalance,
@@ -70,7 +92,6 @@ router.route('/')
                     currentBalance: req.body.currentBalance,
                     benefitRatio: req.body.benefitRatio,
                 }];
-
                 await scenario.save();
                 console.log("save success");
             }
@@ -93,6 +114,7 @@ router.route('/')
                 success: false,
                 err: "session lost"
             });
+            return;
         };
         try {
             var doc = await scenarioModel.findOne({
@@ -133,6 +155,7 @@ router.route('/')
                 success: false,
                 err: "session lost"
             });
+            return;
         };
         try {
             var doc = await scenarioModel.findOne({

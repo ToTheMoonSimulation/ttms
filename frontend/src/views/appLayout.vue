@@ -28,7 +28,8 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-main>
+    <v-main style="overflow:hidden;">
+      <!-- If using vue-router -->
       <router-view></router-view>
     </v-main>
   </v-app>

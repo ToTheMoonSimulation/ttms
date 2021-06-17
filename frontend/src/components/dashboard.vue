@@ -1,94 +1,100 @@
 <template>
-  <v-data-table
-    :headers="headers"
-    :items="scenarios"
-    sort-by="initBalance"
-    class="elevation-1"
-  >
-    <template v-slot:top>
-      <v-toolbar flat>
-        <v-toolbar-title>계좌 리스트</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
-        <v-dialog v-model="dialog" max-width="500px">
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-              계좌 생성
-            </v-btn>
-          </template>
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
-
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="editedItem.name"
-                      label="계좌 이름"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="editedItem.initBalance"
-                      label="시작 금액"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="close">
-                Cancel
+  <v-container fluid>
+    <v-data-table
+      :headers="headers"
+      :items="scenarios"
+      sort-by="initBalance"
+      class="elevation-1"
+      ref="dataTable"
+      :loading="isLoading"
+      loading-text="Loading... Please wait"
+    >
+      <template v-slot:top>
+        <v-toolbar flat>
+          <v-toolbar-title>계좌 리스트</v-toolbar-title>
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <v-dialog v-model="dialog" max-width="500px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+                계좌 생성
               </v-btn>
-              <v-btn color="blue darken-1" text @click="save">
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
-            >
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete"
-                >Cancel</v-btn
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="text-h5">{{ formTitle }}</span>
+              </v-card-title>
+
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="editedItem.name"
+                        label="계좌 이름"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="editedItem.initBalance"
+                        label="시작 금액"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close">
+                  Cancel
+                </v-btn>
+                <v-btn color="blue darken-1" text @click="save">
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="dialogDelete" max-width="500px">
+            <v-card>
+              <v-card-title class="text-h5"
+                >Are you sure you want to delete this item?</v-card-title
               >
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                >OK</v-btn
-              >
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-      </v-toolbar>
-    </template>
-    <template v-slot:[`item.actions`]="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
-    </template>
-    <!-- <template v-slot:no-data>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="closeDelete"
+                  >Cancel</v-btn
+                >
+                <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+                  >OK</v-btn
+                >
+                <v-spacer></v-spacer>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-toolbar>
+      </template>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-icon small class="mr-2" @click="editItem(item)">
+          mdi-pencil
+        </v-icon>
+        <v-icon small @click="deleteItem(item)">
+          mdi-delete
+        </v-icon>
+      </template>
+      <!-- <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">
         Reset
       </v-btn>
     </template> -->
-  </v-data-table>
+    </v-data-table>
+  </v-container>
 </template>
 
 <script>
 import axios from "axios";
 export default {
   data: () => ({
+    isLoading: false,
     dialog: false,
     dialogDelete: false,
     headers: [
@@ -134,17 +140,27 @@ export default {
     },
   },
 
-  created() {
+  mounted() {
+    // loading
+    // // loading-text="Loading... Please wait"
+    // console.log(this.$refs.dataTable);
+    // this.$refs.dataTable.$el.setAttribute("loading", "");
+    // this.$refs.dataTable.$el.setAttribute("loading-text", "Loading... Please wait");
+    this.isLoading = true;
     axios.get("/api/dashboard").then((e) => {
-      console.log("세션 유지중");
-      e.data.docs[0].scenarios.some((item) => {
-        this.scenarios.push({
-          name: item.scenarioName,
-          initBalance: item.initBalance,
-          currentBalance: item.currentBalance,
-          benefitRatio: item.benefitRatio,
+      if (e.data.success) {
+        console.log("세션 유지중");
+
+        e.data.docs[0].scenarios.some((item) => {
+          this.scenarios.push({
+            name: item.scenarioName,
+            initBalance: item.initBalance,
+            currentBalance: item.currentBalance,
+            benefitRatio: item.benefitRatio,
+          });
         });
-      });
+      }
+      this.isLoading = false;
     });
   },
   methods: {
@@ -203,6 +219,7 @@ export default {
           .then((e) => {
             if (e.data.success) {
               Object.assign(this.scenarios[idx], editedObj);
+              this.scenarios[idx].currentBalance = this.scenarios[idx].initBalance;
             }
           });
       } else {
