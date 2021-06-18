@@ -31,19 +31,6 @@ dbUtil.mongooseConenct(() => {
   app.use(cookieParser());
   app.set('static', __dirname);
   app.use('/static', express.static( path.resolve(__dirname,'public')));
-  
-  //setting multer
-  // var multer = require('multer');
-  // const storage = multer.diskStorage({
-  //   destination: function (req, file, cb) {
-  //     cb(null, "./GOT");
-  //   },
-  //   filename: function (req, file, cb) {
-  //     cb(null, file.fieldname + "-" + Date.now());
-  //   },
-  // });
-  // app.use(multer({storage}).single('asd'));
-  // app.use(multer({storage}).array('sxa'));
 
   app.get('/', (req,res)=>{
     res.sendFile(path.resolve(__dirname, './public', 'index.html'));
@@ -51,8 +38,6 @@ dbUtil.mongooseConenct(() => {
   app.use('/api/users', usersRouter);
   app.use('/api/dashboard', dashboardRouter);
   app.use('/api/play', playRouter);
-  
-  
   
   // catch 404 and forward to error handler
   app.use(function (req, res, next) {

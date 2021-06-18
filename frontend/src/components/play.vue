@@ -104,8 +104,8 @@
                     <v-slider
                       v-model="currentHoldingsSlider"
                       class="align-center"
-                      :max="this.currentHoldings.quantity"
-                      :min="0"
+                      :max="100"
+                      :min="1"
                       color="red"
                       hide-details
                     >
@@ -306,7 +306,7 @@ export default {
         this.selectedScenario.coinHoldings.some((coin) => {
           if (coin.coinCode == this.selectedCoinCode) {
             this.currentHoldings = coin;
-            this.currentHoldingsSlider = Math.floor(coin.quantity);
+            this.currentHoldingsSlider = 1;
             return true;
           }
         });
@@ -576,11 +576,10 @@ export default {
                     this.myCoins = item.coinHoldings;
                     this.selectedScenario = item;
                     this.currentHoldings = null;
-                    this.currentHoldingsSlider = 0;
+                    this.currentHoldingsSlider = 1;
                     item.coinHoldings.some((coin) => {
                       if (coin.coinCode == this.selectedCoinCode) {
                         this.currentHoldings = coin;
-                        this.currentHoldingsSlider = Math.floor(coin.quantity);
                         return true;
                       }
                     });
@@ -606,7 +605,7 @@ export default {
       axios
         .post("/api/play/sell", {
           name: this.selectedScenario.name,
-          quantity: this.currentHoldingsSlider,
+          percent: this.currentHoldingsSlider,
           code: this.selectedCoinCode,
           currentPrice: currentPrice,
           tradeType: "sell",
@@ -632,11 +631,10 @@ export default {
                     this.myCoins = item.coinHoldings;
                     this.selectedScenario = item;
                     this.currentHoldings = null;
-                    this.currentHoldingsSlider = 0;
+                    this.currentHoldingsSlider = 1;
                     item.coinHoldings.some((coin) => {
                       if (coin.coinCode == this.selectedCoinCode) {
                         this.currentHoldings = coin;
-                        this.currentHoldingsSlider = Math.floor(coin.quantity);
                         return true;
                       }
                     });
@@ -659,11 +657,10 @@ export default {
         if (item.name == this.selectedScenario.name) {
           this.history = item.tradeHistory;
           this.currentHoldings = null;
-          this.currentHoldingsSlider = 0;
+          this.currentHoldingsSlider = 1;
           item.coinHoldings.some((coin) => {
             if (coin.coinCode == this.selectedCoinCode) {
               this.currentHoldings = coin;
-              this.currentHoldingsSlider = Math.floor(coin.quantity);
               return true;
             }
           });
@@ -681,11 +678,10 @@ export default {
         if (item.name == this.selectedScenario.name) {
           this.history = item.tradeHistory;
           this.currentHoldings = null;
-          this.currentHoldingsSlider = 0;
+          this.currentHoldingsSlider = 1;
           item.coinHoldings.some((coin) => {
             if (coin.coinCode == selectedCode) {
               this.currentHoldings = coin;
-              this.currentHoldingsSlider = Math.floor(coin.quantity);
               return true;
             }
           });

@@ -220,6 +220,7 @@ export default {
             if (e.data.success) {
               Object.assign(this.scenarios[idx], editedObj);
               this.scenarios[idx].currentBalance = this.scenarios[idx].initBalance;
+              this.scenarios[idx].benefitRatio = 0;
             }
           });
       } else {

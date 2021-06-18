@@ -134,7 +134,7 @@ router.route('/login')
             } else {
                 res.json({
                     success: false,
-                    err: "비밀번호 틀림"
+                    err: "wrong password"
                 });
             }
 
@@ -168,16 +168,3 @@ router.route('/logout')
     });
 
 module.exports = router;
-
-
-// .delete(async (req,res)=>{
-//     try {
-//         console.log(req.body.id);
-//         await userModel.remove({
-//             id: req.body.id
-//         });
-
-//         res.redirect(302, '/login');
-//     } catch (err) {
-//         if (err) throw err;
-//     }

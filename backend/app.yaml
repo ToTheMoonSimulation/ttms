@@ -13,6 +13,9 @@ handlers:
 #   secure: always
 #   static_files: public/index.html
 #   upload: public/index.html
+
+# 서버 기능이 구현되어 있는 경우, 배포 환경에선 아래 설정을 써야 서버 통신이 이루어짐.
+# 위의 설정을 쓰게 되면 모든 통신이 index.html 로 연결됨. 정적 페이지만 배포하는 서버라면 유용할지도.
 - url: /api/.*
   secure: always
   script: auto

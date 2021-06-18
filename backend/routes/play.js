@@ -63,7 +63,7 @@ router.route("/buy").post(async (req, res) => {
           var current = req.body.quantity * req.body.currentPrice;
           item.priceAvg =
             (prev + current) / (item.quantity + req.body.quantity);
-          item.priceAvg = Math.round(item.priceAvg * 100) / 100;
+          item.priceAvg = Math.round(item.priceAvg);
           item.quantity += req.body.quantity;
           item.quantity = Math.round(item.quantity * 10000) / 10000;
           item.krw += req.body.krw;
@@ -143,33 +143,43 @@ router.route("/sell").post(async (req, res) => {
         return;
       }
 
-      doc.scenarios[scenarioIdx].tradeHistory.push({
-        coinCode: req.body.code,
-        price: req.body.currentPrice,
-        quantity: Math.round(req.body.quantity * 10000) / 10000,
-        tradeType: req.body.tradeType,
-        tradeDate: getCurrentDate(),
-      });
       var benefit = 0;
       var benefitRatio = 0;
-      var deleteIdx= 0;
-      var isDeleteTarget=false;
+      var deleteIdx = 0;
+      var isDeleteTarget = false;
       doc.scenarios[scenarioIdx].coinHoldings.some((item) => {
         if (item.coinCode == req.body.code) {
-          var a= req.body.quantity * req.body.currentPrice;
-          var b= item.krw;
-          benefitRatio = Math.round( (((a-b)/b) * 100) * 100) /100;
-          benefit = Math.round(req.body.quantity * req.body.currentPrice);
+          var quantity =
+            Math.round(item.quantity * (req.body.percent / 100) * 10000) /
+            10000;
 
-          item.quantity -= req.body.quantity;
+          doc.scenarios[scenarioIdx].tradeHistory.push({
+            coinCode: req.body.code,
+            price: req.body.currentPrice,
+            quantity,
+            tradeType: req.body.tradeType,
+            tradeDate: getCurrentDate(),
+          });
+
+          item.krw = item.krw * (req.body.percent / 100);
+          var a = quantity * req.body.currentPrice;
+          var b = item.krw;
+          benefitRatio = (b == 0) ? 0 : (a - b) / b;
+          benefit = item.krw + Math.round(item.krw * benefitRatio);
+
+          console.log(`a : ${a}, b: ${b}, a-b : ${a-b}, (a-b)/b : ${(a-b)/b}`);
+          console.log(`quantity : ${quantity}`);
+          console.log(`benefitRatio : ${benefitRatio}`);
+          console.log(`benefit : ${benefit}`);
+
+          benefitRatio=Math.round(benefitRatio * 1000)/1000;
+
+          item.quantity -= quantity;
           item.quantity = Math.round(item.quantity * 10000) / 10000;
-          if(item.quantity < 1 ) {
-            console.log("Hello");
-            console.log(item.quantity );
-            item.quantity=0;
-            isDeleteTarget=true;
+          if (item.quantity <= 0) {
+            item.quantity = 0;
+            isDeleteTarget = true;
           }
-          item.krw -= benefit;
           coinFound = true;
           return true;
         }
@@ -177,12 +187,11 @@ router.route("/sell").post(async (req, res) => {
       });
       if (coinFound == true) {
         doc.scenarios[scenarioIdx].currentBalance += benefit;
-        doc.scenarios[scenarioIdx].benefitRatio = benefitRatio;
+        doc.scenarios[scenarioIdx].benefitRatio += benefitRatio;
 
-        if(isDeleteTarget){
-          doc.scenarios[scenarioIdx].coinHoldings.splice(deleteIdx,1);
-          console.log("Helloa");
-          console.log(doc.scenarios[scenarioIdx].coinHoldings );
+        if (isDeleteTarget) {
+          console.log("a");
+          doc.scenarios[scenarioIdx].coinHoldings.splice(deleteIdx, 1);
         }
         await doc.save();
         res.json({
