@@ -343,6 +343,9 @@ export default {
             this.loginSuccess = true;
             this.password = "";
             this.confirm_password = "";
+            if (e.data.adminLogin) {
+              this.isAdminLogin = true;
+            }
             this.$store.dispatch("setLogin", true);
           } else {
             console.log(e);
@@ -399,7 +402,7 @@ export default {
         this.password = "";
         this.confirm_password = "";
         this.loginSuccess = false;
-        this.isAdminLogin=false;
+        this.isAdminLogin = false;
         this.$store.dispatch("setLogin", false);
       });
     },

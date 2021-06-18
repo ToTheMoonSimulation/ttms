@@ -52,10 +52,20 @@ router.route('/register')
             await user.save();
             console.log("register success");
             req.session.user_id = user.id;
-            res.json({
-                success: true,
-                err: null
-            });
+            if (req.session.user_id === "admin") {
+                res.json({
+                    success: true,
+                    user_id: req.session.user_id,
+                    adminLogin: true,
+                    err: null
+                });
+            } else {
+                res.json({
+                    success: true,
+                    user_id: req.session.user_id,
+                    err: null
+                });
+            }
         } catch (err) {
             res.json({
                 success: false,
@@ -111,9 +121,7 @@ router.route('/login')
             var docs = await userModel.find({
                 id: req.body.id
             });
-            console.log(docs);
-            console.log(req.body.password);
-            console.log(docs[0].password);
+            if(docs.length == 0) throw "no id found";
 
             var match = await bcrypt.compare(req.body.password, docs[0].password);
             console.log(req.body.password, " == ", docs[0].password, ':', match);

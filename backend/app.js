@@ -11,6 +11,7 @@ dbUtil.mongooseConenct(() => {
   var usersRouter = require('./routes/users');
   var dashboardRouter = require('./routes/dashboard');
   var playRouter = require('./routes/play');
+  var adminRouter = require('./routes/admin');
 
   var app = express();
 
@@ -38,6 +39,7 @@ dbUtil.mongooseConenct(() => {
   app.use('/api/users', usersRouter);
   app.use('/api/dashboard', dashboardRouter);
   app.use('/api/play', playRouter);
+  app.use('/api/admin', adminRouter);
   
   // catch 404 and forward to error handler
   app.use(function (req, res, next) {
