@@ -158,7 +158,7 @@ router.route('/')
             return;
         };
         try {
-            var doc = await scenarioModel.deleteOne({
+            var doc = await scenarioModel.findOne({
                 id: req.session.user_id
             });
             console.log(doc);
@@ -179,6 +179,7 @@ router.route('/')
                 });
             }
         } catch (err) {
+            console.log(err);
             res.json({
                 success: false,
                 err

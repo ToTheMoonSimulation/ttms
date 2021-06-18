@@ -180,7 +180,8 @@ export default {
 
     deleteItemConfirm() {
       var idx = this.editedIndex;
-      axios.delete("/api/dashboard", { idx }).then((e) => {
+      console.log(idx);
+      axios.delete("/api/dashboard", { data: { idx } }).then((e) => {
         if (e.data.success) {
           this.scenarios.splice(idx, 1);
         }
@@ -219,7 +220,9 @@ export default {
           .then((e) => {
             if (e.data.success) {
               Object.assign(this.scenarios[idx], editedObj);
-              this.scenarios[idx].currentBalance = this.scenarios[idx].initBalance;
+              this.scenarios[idx].currentBalance = this.scenarios[
+                idx
+              ].initBalance;
               this.scenarios[idx].benefitRatio = 0;
             }
           });
