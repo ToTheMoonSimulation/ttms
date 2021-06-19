@@ -117,20 +117,20 @@ export default {
     },
   },
   mounted() {
-    console.log("mounted");
+    // 1. 전체 회원 리스트 가져오기
     this.isLoading = true;
     axios.get("/api/admin").then((e) => {
-      console.log(e.data);
       if (e.data.success) {
         e.data.userDocs.some((user) => {
           this.userItems.push({
             name: user.id,
-            benefitRatio : -99999
+            benefitRatio: -99999,
           });
         });
         this.userItems.some((user) => {
           e.data.docs.some((data) => {
             if (user.name == data.id) {
+              //계좌 개설하지 않은 회원들은 수익률 -9999999로 표시
               var bestBenefitRatio = -9999999;
               data.scenarios.some((scenario) => {
                 bestBenefitRatio = Math.max(
@@ -149,8 +149,6 @@ export default {
             }
           });
         });
-
-        console.log(this.userDetails);
       }
     });
     this.isLoading = false;
@@ -159,7 +157,6 @@ export default {
   methods: {
     onClickRow(e) {
       if (this.dialogDelete) return;
-      console.log(e);
       this.selectedUserDetail = [];
       this.userDetails.some((item) => {
         if (item.userId == e.name) {
@@ -167,10 +164,8 @@ export default {
         }
       });
       this.dialogUserInfo = true;
-      console.log(this.selectedUserDetail);
     },
     deleteItem(e) {
-      console.log("delete", e);
       this.dialogDelete = true;
       this.selectedUserDetail = [];
       this.userDetails.some((item) => {
@@ -179,16 +174,14 @@ export default {
           return true;
         }
       });
-      if(this.selectedUserDetail.length == 0){
+      if (this.selectedUserDetail.length == 0) {
         this.selectedUserDetail.push({
-          userId : e.name
-        })
+          userId: e.name,
+        });
       }
-      console.log(this.selectedUserDetail);
     },
 
     deleteItemConfirm() {
-      
       axios
         .delete("/api/admin", {
           data: {
@@ -196,7 +189,6 @@ export default {
           },
         })
         .then((e) => {
-          console.log(e.data);
           if (e.data.success) {
             var idx = 0;
             this.userItems.some((item) => {

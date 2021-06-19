@@ -141,17 +141,16 @@ export default {
   },
 
   mounted() {
-    // loading
-    // // loading-text="Loading... Please wait"
-    // console.log(this.$refs.dataTable);
-    // this.$refs.dataTable.$el.setAttribute("loading", "");
-    // this.$refs.dataTable.$el.setAttribute("loading-text", "Loading... Please wait");
+    /*
+      1. 세션 유지 중인지 체크
+      2. 대쉬보드에 표시할 데이터 채우기
+    */
     this.isLoading = true;
+    // 1. 세션 유지 중인지 체크
     axios.get("/api/dashboard").then((e) => {
       if (e.data.success) {
-        console.log("세션 유지중");
-
         e.data.docs[0].scenarios.some((item) => {
+          // 2. 대쉬보드에 표시할 데이터 채우기
           this.scenarios.push({
             name: item.scenarioName,
             initBalance: item.initBalance,
@@ -165,8 +164,6 @@ export default {
   },
   methods: {
     editItem(item) {
-      console.log(this.scenarios.indexOf(item));
-      console.log(Object.assign({}, item));
       this.editedIndex = this.scenarios.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
@@ -180,7 +177,6 @@ export default {
 
     deleteItemConfirm() {
       var idx = this.editedIndex;
-      console.log(idx);
       axios.delete("/api/dashboard", { data: { idx } }).then((e) => {
         if (e.data.success) {
           this.scenarios.splice(idx, 1);
@@ -235,7 +231,6 @@ export default {
         };
 
         axios.post("/api/dashboard", obj).then((e) => {
-          console.log(e);
           if (e.data.success) {
             this.scenarios.push(obj);
           }

@@ -275,23 +275,18 @@ export default {
     };
   },
   mounted() {
-    console.log("mounted");
-
     /*
       [코드 순서]
-      계좌 가져오기
-      웹소켓 연결 수립
-      KRW 마켓 실시간 정보 가져오기 & 테이블 채우기
-      기본으로 선택된 코인 정보 가져오기 & 차트 그리기
+      1. 계좌 가져오기
+      2. 웹소켓 연결 수립
+      3. KRW 마켓 실시간 정보 가져오기 & 테이블 채우기
+      4. 기본으로 선택된 코인 정보 가져오기 & 차트 그리기
     */
-    //계좌 가져오기
+    //1. 계좌 가져오기
     this.isLoadingScenarios = true;
     this.isLoadingMarkets = true;
     axios.get("/api/dashboard").then((e) => {
       if (e.data.success) {
-        console.log("세션 유지중");
-        console.log(e.data.docs[0]);
-
         e.data.docs[0].scenarios.some((item) => {
           this.scenarios.push({
             name: item.scenarioName,
@@ -317,10 +312,8 @@ export default {
       this.isLoadingScenarios = false;
     });
 
-    //웹소켓 연결 수립
-    ws.onopen = (e) => {
-      console.log("onopen");
-      console.log(e);
+    //2. 웹소켓 연결 수립
+    ws.onopen = () => {
       var msg = [
         {
           ticket: "TEST",
@@ -423,7 +416,6 @@ export default {
     this.observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
         if (entry.target && this.chart) {
-          console.log(entry);
           this.chart.applyOptions({
             width: entry.contentRect.width,
             height: entry.contentRect.height,
@@ -433,7 +425,7 @@ export default {
     });
     this.observer.observe(this.$refs.chartDiv);
 
-    // KRW 마켓 실시간 정보 가져오기 & 테이블 채우기 <<= localstorage로 저장하는건 위험할듯.
+    // 3. KRW 마켓 실시간 정보 가져오기 & 테이블 채우기 <<= localstorage로 저장하는건 위험할듯.
     //  업비트 사이트에 상장폐지되는 코인들이 생기면 리스트를 갱신해줘야함.
     //  리스트 갱신전까지 오래된 정보가지고 정보 요청하면 귀찮은 에러처리에 성능 감소가 있을지도. 일단 주석처리하고 매번 갱신하는 걸로.
     // if (!this.$store.getters.krwMarketCodes) {
@@ -452,9 +444,6 @@ export default {
             requsets.push(item.market);
           }
         });
-        // this.$store.dispatch("setKrwMarketCodes", krwMarkets);
-        // console.log(this.$store.getters.krwMarketCodes);
-        console.log(requsets);
 
         if (ws.readyState == 1) {
           var msg = [
@@ -473,7 +462,7 @@ export default {
       });
     // }
 
-    // 기본으로 선택된 코인 정보 가져오기 & 차트 그리기
+    // 4. 기본으로 선택된 코인 정보 가져오기 & 차트 그리기
     var chartConfig = {
       width: this.$refs.chartDiv.width,
       height: this.$refs.chartDiv.height,
@@ -537,7 +526,6 @@ export default {
   unmounted() {},
   methods: {
     onClickBuy() {
-      console.log(this.slider);
       var currentPrice = 0;
 
       this.markets.some((item) => {
@@ -593,7 +581,6 @@ export default {
         });
     },
     onClickSell() {
-      console.log(this.currentHoldingsSlider);
       var currentPrice = 0;
 
       this.markets.some((item) => {
@@ -649,11 +636,7 @@ export default {
     },
     onClickScenarioList(row) {
       this.selectedScenario = Object.assign({}, row);
-      console.log(this.selectedScenario);
-
-      console.log(this.scenarios);
       this.scenarios.some((item) => {
-        console.log(item);
         if (item.name == this.selectedScenario.name) {
           this.history = item.tradeHistory;
           this.currentHoldings = null;
@@ -673,7 +656,6 @@ export default {
       if (this.selectedCoinCode == row.code) return;
 
       var selectedCode = row.code;
-      console.log(row);
       this.scenarios.some((item) => {
         if (item.name == this.selectedScenario.name) {
           this.history = item.tradeHistory;
@@ -697,8 +679,6 @@ export default {
         .then((e) => {
           var datas = e.data;
           var arrInfos = [];
-          // this.chart = createChart(this.$refs.chartDiv, chartConfig);
-          // this.bar = this.chart.addCandlestickSeries();
           datas.some((item) => {
             let a = new Date(item.candle_date_time_kst);
             a.setHours(a.getHours() + 9);

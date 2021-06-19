@@ -5,8 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session = require('express-session');
 const dbUtil = require('./db/dbUtil');
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 3000; //배포 서버에서 설정된 PORT 환경 변수가 있다면 그것을 쓰고 없으면 3000번 쓰기.
 
+//DB 연결 수립 완료 후 express 웹서버 생성
+//반드시 DB 연결 수립 완료 후 웹서버 생성하도록 콜백으로 넘김
 dbUtil.mongooseConenct(() => {
   var usersRouter = require('./routes/users');
   var dashboardRouter = require('./routes/dashboard');
@@ -19,6 +21,7 @@ dbUtil.mongooseConenct(() => {
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
+  //미들웨어 등록
   app.use(session({
     secret: '@#@$MYSIGN#@$#$',
     resave: false,
@@ -33,6 +36,7 @@ dbUtil.mongooseConenct(() => {
   app.set('static', __dirname);
   app.use('/static', express.static( path.resolve(__dirname,'public')));
 
+  //루트 디렉토리는 get으로 설정. 만약 use로 한다면 '/' 으로 시작하는 모든 디렉토리는 '/' 루트 디렉토리로 연결됨.
   app.get('/', (req,res)=>{
     res.sendFile(path.resolve(__dirname, './public', 'index.html'));
   });

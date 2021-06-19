@@ -338,7 +338,6 @@ export default {
         })
         .then((e) => {
           if (e.data.success == true) {
-            console.log("회원가입 성공!");
             this.registerDialog = false;
             this.loginSuccess = true;
             this.password = "";
@@ -348,7 +347,6 @@ export default {
             }
             this.$store.dispatch("setLogin", true);
           } else {
-            console.log(e);
             console.log(e.data.err || "에러!");
             this.loginSuccess = false;
           }
@@ -362,7 +360,6 @@ export default {
         })
         .then((e) => {
           if (e.data.success == true) {
-            console.log("수정 성공!");
             this.modifyDialog = false;
             this.password = "";
             this.confirm_password = "";
@@ -378,9 +375,7 @@ export default {
           password: this.password,
         })
         .then((e) => {
-          console.log(e);
           if (e.data.success == true) {
-            console.log("로그인 성공!");
             this.loginDialog = false;
             this.loginSuccess = true;
             this.password = "";
@@ -397,7 +392,6 @@ export default {
     },
     logoutBtn: function() {
       axios.post("/api/users/logout").then(() => {
-        console.log("로그아웃 성공!");
         this.id = "";
         this.password = "";
         this.confirm_password = "";
@@ -407,19 +401,20 @@ export default {
       });
     },
   },
-  unmounted() {
-    console.log("unmounted");
-  },
   mounted() {
-    console.log("mounted");
+    /*
+      1. 세션 유지 중인지 체크
+      2. 웹소켓 연결 수립 -> "업비트" Websocket 연결 후 차트에 쓰일 데이터 가져오기
+      3. 차트 그리기
+    */
 
+    //1. 세션 유지 중인지 체크
     if (this.$store.getters.isLogin) {
       this.loginSuccess = true;
     }
 
     axios.get("/api/users/session").then((e) => {
       if (e.data.success == true) {
-        console.log("세션 유지중");
         this.loginSuccess = true;
         this.id = e.data.user_id;
         this.$store.dispatch("setLogin", true);
@@ -432,9 +427,8 @@ export default {
       }
     });
 
-    ws.onopen = (e) => {
-      console.log("onopen");
-      console.log(e);
+    // 2. 웹소켓 연결 수립 -> "업비트" Websocket 연결 후 차트에 쓰일 데이터 가져오기
+    ws.onopen = () => {
       var msg = [
         {
           ticket: "TEST",
@@ -618,6 +612,7 @@ export default {
     this.observer.observe(this.$refs.btcChartDiv);
     this.observer.observe(this.$refs.ethChartDiv);
 
+    // 3. 차트 그리기
     var chartConfig = {
       width: 500,
       height: 400,
