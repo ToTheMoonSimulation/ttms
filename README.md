@@ -17,17 +17,71 @@ backend/db/dbUtils.js <br><br>
 
 
 ```
-mongoose.set('useCreateIndex', true);
+const name = 'projects/1035293153873/secrets/MONGODB_ATLAS_URI/versions/latest'
+let _db;
+
+const mongooseConenct = async (cb) => {
+    const {
+        SecretManagerServiceClient
+    } = require('@google-cloud/secret-manager');
+    // Instantiates a client
+    const client = new SecretManagerServiceClient();
+
+    const [version] = await client.accessSecretVersion({
+        name: name,
+    });
+
+    // Extract the payload as a string.
+    const payload = version.payload.data.toString();
+
+    mongoose.set('useCreateIndex', true);
     mongoose.connect(payload, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })
+        .then((db) => {
+            _db = db;
+            console.log('Connected to the database.');
+            cb();
+        })
+        .catch((err) => {
+            console.log('Cannot connect to the database.\n', err);
+            process.exit();
+        });
+};
 ```
-payload 부분을 자신의 몽고DB URL로 대체 입력
+payload 부분을 자신의 몽고DB URL로 대체 입력. 주석 처리도 동일하게.
 ```
- mongoose.set('useCreateIndex', true);
+// const name = 'projects/1035293153873/secrets/MONGODB_ATLAS_URI/versions/latest'
+let _db;
+
+const mongooseConenct = async (cb) => {
+    // const {
+    //     SecretManagerServiceClient
+    // } = require('@google-cloud/secret-manager');
+    // // Instantiates a client
+    // const client = new SecretManagerServiceClient();
+
+    // const [version] = await client.accessSecretVersion({
+    //     name: name,
+    // });
+
+    // // Extract the payload as a string.
+    // const payload = version.payload.data.toString();
+
+    mongoose.set('useCreateIndex', true);
     mongoose.connect("자신의 몽고DB URL 입력", {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })
+        .then((db) => {
+            _db = db;
+            console.log('Connected to the database.');
+            cb();
+        })
+        .catch((err) => {
+            console.log('Cannot connect to the database.\n', err);
+            process.exit();
+        });
+};
 ```
