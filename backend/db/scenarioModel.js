@@ -23,8 +23,7 @@ var scenarioSchema = new Schema({
     scenarios: [{
         scenarioName: {
             type: String,
-            required: true,
-            unique: true
+            required: true
         },
         initBalance: {
             type: Number,
